@@ -2,7 +2,7 @@
 import { Thought } from '../models/index.js';
 import Users from '../models/Users.js';
 import cleanDB from './cleanDB.js';
-import { getRandomThoughts, getRandomUsers } from './data'; // Adjusted to match TypeScript module resolution
+import { getRandomThoughts, getRandomUsers } from './data.js'; // Adjusted to match TypeScript module resolution
 import { getDatabase, getClient } from '../config/connection.js'; // Adjust the path as needed
 import {  MongoClient } from 'mongodb'; // Adjust the path as needed
 

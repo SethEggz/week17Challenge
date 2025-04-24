@@ -92,8 +92,14 @@ const thoughts = [
 ];
 // Get a random item given an array
 export const getRandomArrItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
-// Gets a random full name
-export const getRandomUser = () => `${getRandomArrItem(Users)} ${getRandomArrItem(Users)}`;
+// Gets a random User
+export const getRandomUsers = (int) => {
+    const results = [];
+    for (let i = 0; i < int; i++) {
+        results.push(`${getRandomArrItem(Users)} ${getRandomArrItem(Users)}`);
+    }
+    return results;
+};
 // Function to generate random assignments that we can add to student object.
 export const getRandomThoughts = (int) => {
     const results = [];
