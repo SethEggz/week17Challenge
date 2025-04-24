@@ -1,49 +1,39 @@
-import db from '../config/connection.js';
-import { Course, Student } from '../models/index.js';
+
+import { Thought } from '../models/index.js';
+import Users from '../models/Users.js';
 import cleanDB from './cleanDB.js';
-import { getRandomName, getRandomAssignments } from './data.js';
+import { getRandomThoughts, getRandomUsers } from './data'; // Adjusted to match TypeScript module resolution
+import { getDatabase, getClient } from '../config/connection.js'; // Adjust the path as needed
+import {  MongoClient } from 'mongodb'; // Adjust the path as needed
 
-try {
-  await db();
-  await cleanDB();
 
-  // Create empty array to hold the students
-  const students = [];
 
-  // Loop 20 times -- add students to the students array
-  for (let i = 0; i < 20; i++) {
-    // Get some random assignment objects using a helper function that we imported from ./data
-    const assignments = getRandomAssignments(20);
-
-    const fullName = getRandomName();
-    const first = fullName.split(' ')[0];
-    const last = fullName.split(' ')[1];
-    const github = `${first}${Math.floor(Math.random() * (99 - 18 + 1) + 18)}`;
-
-    students.push({
-      first,
-      last,
-      github,
-      assignments,
-    });
+const seedDB = async () => {
+  await getDatabase(); // Get the database instance
+  const client: MongoClient = getClient(); // Get the MongoDB client instance
+  
+  try {
+    await cleanDB(); // Clean the database before seeding
+    const users = getRandomUsers(10);
+    for (const user of users) {
+        await Users.create(user);
+    }
+    await Thought.create(getRandomThoughts(10));
+    console.log('Database seeded!');
+  } catch (err) {
+    console.error('Error seeding database:', err);
+  } finally {
+    await client.close(); // Close connection regardless of success/failure
   }
-
-  // Add students to the collection and await the results
-  const studentData = await Student.create(students);
-
-  // Add courses to the collection and await the results
-  await Course.create({
-    name: 'UCLA',
-    inPerson: false,
-    students: [...studentData.map(({ _id }: { [key: string]: any }) => _id)],
+};
+seedDB()
+  .then(() => {
+    console.log('Seeding complete!');
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error('Error during seeding:', err);
+    process.exit(1);
   });
 
-  // Log out the seed data to indicate what should appear in the database
-  console.table(students);
-  console.info('Seeding complete! 🌱');
-  process.exit(0);
-} catch (error) {
-  console.error('Error seeding database:', error);
-  process.exit(1);
-}
 

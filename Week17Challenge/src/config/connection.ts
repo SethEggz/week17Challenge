@@ -1,14 +1,46 @@
+import { MongoClient, Db } from 'mongodb';
 import mongoose from 'mongoose';
 
-const db = async (): Promise<typeof mongoose.connection> =>{
+// Connection URI
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/studentsDB';
+const DB_NAME = 'studentsDB'; // Ensure consistent database name
+
+// Mongoose connection
+const db = async (): Promise<typeof mongoose.connection> => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/studentsDB');
-        console.log('Database connected.');
+        await mongoose.connect(MONGODB_URI);
+        console.log('Mongoose connection established.');
         return mongoose.connection;
     } catch(error) {
-        console.error('Database connection error:', error);
-        throw new Error('Database connection failed.');
+        console.error('Mongoose connection error:', error);
+        throw new Error('Mongoose connection failed.');
     }
 }
+
+// MongoDB native client
+let client: MongoClient;
+
+export const getClient = (): MongoClient => {
+  if (!client) {
+    client = new MongoClient(MONGODB_URI);
+  }
+  return client;
+};
+
+export const getDatabase = async (): Promise<Db> => {
+  if (!client) {
+    client = getClient();
+  }
+  
+  // Check connection status (updated for newer MongoDB driver versions)
+  try {
+    // For newer versions of MongoDB driver
+    await client.connect();
+    return client.db(DB_NAME);
+  } catch (error) {
+    console.error('Native MongoDB connection error:', error);
+    throw new Error('Native MongoDB connection failed.');
+  }
+};
 
 export default db;
